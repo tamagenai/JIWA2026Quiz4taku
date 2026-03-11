@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja" class="no-js">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国語4択クイズ</title>
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --correct-color: #28a745;
+      --incorrect-color: #dc3545;
+      --neutral-color: #f8f9fa;
+      --text-color: #212529;
+      --border-color: #dee2e6;
+      --overlay-bg: rgba(0, 0, 0, 0.85);
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    html.js .animated { animation: 0.5s fadeIn ease-out; }
+
+    body {
+      font-family: 'Helvetica Neue', 'Arial', sans-serif;
+      background-color: #f0f2f5;
+      color: var(--text-color);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; margin: 0; padding: 1rem; box-sizing: border-box;
+    }
+
+    #app-container {
+      background-color: #fff; border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 100%; max-width: 600px; overflow: hidden;
+      min-height: 400px; position: relative;
+    }
+
+    #header {
+      background-color: var(--primary-color); color: white;
+      padding: 1.5rem; text-align: center; position: relative;
+    }
+    #header h1 { margin: 0; font-size: 1.5rem; }
+
+    /* メニュー画面 */
+    #menu-content { padding: 2rem; }
+    .quiz-list-btn {
+      width: 100%; padding: 1rem; margin-bottom: 1rem;
+      background-color: white; border: 2px solid var(--primary-color);
+      color: var(--primary-color); border-radius: 10px;
+      font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+    }
+    .quiz-list-btn:hover { background-color: var(--primary-color); color: white; }
+
+    /* クイズ画面 */
+    #main-content { padding: 1.5rem 2rem; }
+    #progress-bar-container { width: 100%; height: 8px; background-color: #e9ecef; }
+    #progress-bar { width: 0%; height: 100%; background-color: var(--primary-color); transition: width 0.4s; }
+    
+    #info-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;
+    }
+    #progress-text { color: #6c757d; font-size: 0.9rem; margin-top: 5px;}
+    
+    #resource-buttons-container {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end;
+    }
+    .resource-btn {
+      background-color: #17a2b8; color: white; border: none;
+      padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+      transition: background 0.2s; text-decoration: none;
+    }
+    .resource-btn:hover { background-color: #138496; }
+    .resource-btn::before { content: '🔗'; } /* アイコン */
+
+    #question { font-size: 1.2rem; margin-bottom: 1.5rem; line-height: 1.6; }
+    .btn-grid { display: grid; gap: 0.75rem; }
+    .btn {
+      background-color: var(--neutral-color); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 1rem; font-size: 1rem; cursor: pointer;
+      text-align: left; width: 100%;
+    }
+    .btn:hover:not(:disabled) { border-color: var(--primary-color); background-color: #e7f1ff; }
+    .btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); }
+    .btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); }
+    
+    #controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .control-btn {
+      background-color: transparent; border: 1px solid var(--primary-color);
+      color: var(--primary-color); padding: 0.6rem 1.2rem; border-radius: 20px; cursor: pointer;
+    }
+    .control-btn:hover { background-color: var(--primary-color); color: white; }
+    
+    /* モーダル */
+    #modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: var(--overlay-bg); z-index: 1000;
+      display: flex; justify-content: center; align-items: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    #modal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    #modal-content {
+      background: white; width: 90%; max-width: 800px; height: 80%;
+      border-radius: 10px; position: relative; display: flex; flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    #modal-header {
+      padding: 10px 15px; border-bottom: 1px solid #ddd;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #f8f9fa; border-radius: 10px 10px 0 0;
+    }
+    #modal-title { font-weight: bold; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* モーダルヘッダーのボタン群 */
+    .modal-header-btns { display: flex; gap: 10px; align-items: center; }
+    
+    #modal-external-link {
+      text-decoration: none; color: #007bff; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #modal-external-link:hover { text-decoration: underline; }
+    
+    #modal-close-btn {
+      background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0 5px;
+    }
+    
+    #modal-body {
+      flex: 1; padding: 0; overflow: hidden; background: #000; /* 動画用に黒背景 */
+      position: relative;
+    }
+    #modal-iframe {
+      width: 100%; height: 100%; border: none;
+    }
+
+    /* ローディング */
+    #loading {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.9); z-index: 100;
+      display: flex; justify-content: center; align-items: center; flex-direction: column;
+    }
+    .spinner {
+      width: 40px; height: 40px; border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-color); border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 1rem;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .hide { display: none !important; }
+    #home-btn {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      background: none; border: 1px solid white; color: white;
+      padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app-container">
+    <div id="header">
+      <button id="home-btn" class="hide">一覧へ</button>
+      <h1 id="header-title">クイズ一覧</h1>
+    </div>
+
+    <div id="loading">
+      <div class="spinner"></div>
+      <p id="loading-text">データを読み込み中...</p>
+    </div>
+
+    <div id="menu-content">
+      <div id="quiz-list"></div>
+    </div>
+
+    <div id="quiz-interface" class="hide">
+      <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+      </div>
+      <div id="main-content">
+        <div id="info-header">
+          <div id="resource-buttons-container"></div>
+          <div id="progress-text">
+            問題 <span id="question-number"></span> / <span id="total-questions"></span>
+          </div>
+        </div>
+
+        <h2 id="question"></h2>
+        <div id="answer-buttons" class="btn-grid"></div>
+        
+        <div id="result-container" class="hide" style="margin-top: 1.5rem;">
+          <h3 id="result-title"></h3>
+          <p id="rationale-text"></p>
+        </div>
+
+        <div id="controls">
+          <button id="hint-btn" class="control-btn">ヒントを見る</button>
+          <button id="next-btn" class="control-btn hide">次の問題へ</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="final-result-container" class="hide" style="padding: 2rem; text-align: center;">
+      <h2>クイズ終了！</h2>
+      <p style="font-size: 1.2rem;">スコア: <span id="score"></span> / <span id="total-final"></span></p>
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+        <button id="restart-btn" class="control-btn">もう一度挑戦する</button>
+        <button id="back-to-menu-btn" class="control-btn">一覧に戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- モーダル -->
+  <div id="modal-overlay">
+    <div id="modal-content">
+      <div id="modal-header">
+        <span id="modal-title">参考資料</span>
+        <div class="modal-header-btns">
+          <a id="modal-external-link" href="#" target="_blank" rel="noopener noreferrer">
+            ↗ 別タブで開く
+          </a>
+          <button id="modal-close-btn">×</button>
+        </div>
+      </div>
+      <div id="modal-body">
+        <iframe id="modal-iframe" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ★★★ ここにGASのウェブアプリURLを貼り付けてください ★★★
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzfew-aefASWtQY8Xqb_l4TXjNGoha7tUJRwcJQe-sgipicQxA27YwALEv3oM-mOzs/exec"; 
+
+    // DOM要素
+    const loadingEl = document.getElementById('loading');
+    const loadingText = document.getElementById('loading-text');
+    const menuContent = document.getElementById('menu-content');
+    const quizListEl = document.getElementById('quiz-list');
+    const quizInterface = document.getElementById('quiz-interface');
+    const headerTitle = document.getElementById('header-title');
+    const homeBtn = document.getElementById('home-btn');
+    
+    const questionEl = document.getElementById('question');
+    const answerButtonsEl = document.getElementById('answer-buttons');
+    const nextBtn = document.getElementById('next-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const resultContainer = document.getElementById('result-container');
+    const resultTitleEl = document.getElementById('result-title');
+    const rationaleTextEl = document.getElementById('rationale-text');
+    const questionNumberEl = document.getElementById('question-number');
+    const totalQuestionsEl = document.getElementById('total-questions');
+    const progressBar = document.getElementById('progress-bar');
+    
+    const resourceButtonsContainer = document.getElementById('resource-buttons-container');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalIframe = document.getElementById('modal-iframe');
+    const modalTitle = document.getElementById('modal-title');
+    const modalExternalLink = document.getElementById('modal-external-link');
+
+    const finalResultContainer = document.getElementById('final-result-container');
+    const scoreEl = document.getElementById('score');
+    const totalFinalEl = document.getElementById('total-final');
+    const restartBtn = document.getElementById('restart-btn');
+    const backToMenuBtn = document.getElementById('back-to-menu-btn');
+
+    let currentQuestions = [];
+    let currentResources = [];
+    let currentQuizIndex = 0;
+    let score = 0;
+
+    // --- 初期化 ---
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('js');
+    
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    
+    fetchSheetList();
+
+    // --- API通信 ---
+
+    async function fetchSheetList() {
+      showLoading('クイズ一覧を取得中...');
+      try {
+        const response = await fetch(GAS_API_URL);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          renderQuizList(data.sheets);
+        } else {
+          alert('エラー: ' + data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function fetchQuizData(sheetName) {
+      showLoading(`${sheetName} を読み込み中...`);
+      try {
+        const url = `${GAS_API_URL}?action=getQuiz&sheetName=${encodeURIComponent(sheetName)}`;
+        const response = await fetch(url);
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          let questions = [];
+          if (Array.isArray(json.data)) {
+            questions = json.data;
+          } else if (json.data.quiz && Array.isArray(json.data.quiz)) {
+            questions = json.data.quiz;
+          } else {
+            throw new Error('データの形式が不明です');
+          }
+          
+          const resources = json.resources || [];
+          startQuiz(questions, resources, sheetName);
+        } else {
+          alert('エラー: ' + json.message);
+          showMenu();
+        }
+      } catch (error) {
+        console.error(error);
+        alert('クイズデータの読み込みに失敗しました。');
+        showMenu();
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // --- 画面遷移 ---
+
+    function renderQuizList(sheets) {
+      quizListEl.innerHTML = '';
+      if (sheets.length === 0) {
+        quizListEl.innerHTML = '<p>クイズが見つかりません。</p>';
+        return;
+      }
+
+      sheets.forEach(sheetName => {
+        const btn = document.createElement('button');
+        btn.innerText = sheetName;
+        btn.classList.add('quiz-list-btn');
+        btn.addEventListener('click', () => fetchQuizData(sheetName));
+        quizListEl.appendChild(btn);
+      });
+      showMenu();
+    }
+
+    function showMenu() {
+      menuContent.classList.remove('hide');
+      quizInterface.classList.add('hide');
+      finalResultContainer.classList.add('hide');
+      homeBtn.classList.add('hide');
+      headerTitle.innerText = 'クイズ一覧';
+    }
+
+    function showLoading(msg) {
+      loadingText.innerText = msg;
+      loadingEl.classList.remove('hide');
+    }
+
+    function hideLoading() {
+      loadingEl.classList.add('hide');
+    }
+
+    // --- クイズロジック ---
+
+    function startQuiz(questions, resources, title) {
+      currentQuestions = questions;
+      currentResources = resources;
+      
+      currentQuestions.sort(() => Math.random() - 0.5);
+      
+      currentQuizIndex = 0;
+      score = 0;
+      
+      menuContent.classList.add('hide');
+      finalResultContainer.classList.add('hide');
+      quizInterface.classList.remove('hide');
+      homeBtn.classList.remove('hide');
+      headerTitle.innerText = title;
+      
+      totalQuestionsEl.innerText = currentQuestions.length;
+      
+      renderResourceButtons();
+      showQuestion();
+    }
+
+    function renderResourceButtons() {
+      resourceButtonsContainer.innerHTML = '';
+      if (currentResources.length === 0) return;
+
+      currentResources.forEach(res => {
+        const btn = document.createElement('button');
+        btn.innerText = res.name;
+        btn.classList.add('resource-btn');
+        btn.addEventListener('click', () => openModal(res.name, res.url));
+        resourceButtonsContainer.appendChild(btn);
+      });
+    }
+
+    // --- モーダル制御（URL変換ロジック） ---
+
+    function openModal(name, url) {
+      modalTitle.innerText = name;
+      modalExternalLink.href = url; // 別タブ用のリンクを設定
+      
+      let embedUrl = url;
+
+      // 1. Google Drive
+      if (url.includes('drive.google.com') && url.includes('/view')) {
+        embedUrl = url.replace('/view', '/preview');
+      }
+      // 2. YouTube (youtu.be または youtube.com/watch?v=...)
+      else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = extractYouTubeId(url);
+        if (videoId) {
+          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        }
+      }
+      // 3. その他のWebサイトはそのまま表示（表示できない場合は別タブボタンを使ってもらう）
+
+      modalIframe.src = embedUrl;
+      modalOverlay.classList.add('active');
+    }
+
+    // YouTube ID抽出ヘルパー関数
+    function extractYouTubeId(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      modalIframe.src = "";
+    }
+
+    modalCloseBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // --- クイズ進行 ---
+
+    function showQuestion() {
+      resetState();
+      updateProgressBar();
+
+      const currentQuiz = currentQuestions[currentQuizIndex];
+      questionNumberEl.innerText = currentQuizIndex + 1;
+      questionEl.innerText = currentQuiz.question;
+      questionEl.classList.add('animated');
+      
+      currentQuiz.answerOptions.forEach(answer => {
+        const button = document.createElement('button');
+        button.innerText = answer.text;
+        button.classList.add('btn', 'animated');
+        if (answer.isCorrect) button.dataset.correct = answer.isCorrect;
+        button.dataset.rationale = answer.rationale || "";
+        button.addEventListener('click', selectAnswer);
+        answerButtonsEl.appendChild(button);
+      });
+    }
+
+    function resetState() {
+      nextBtn.classList.add('hide');
+      nextBtn.innerText = '次の問題へ';
+      hintBtn.style.display = '';
+      resultContainer.classList.add('hide');
+      while (answerButtonsEl.firstChild) {
+        answerButtonsEl.removeChild(answerButtonsEl.firstChild);
+      }
+      questionEl.classList.remove('animated');
+    }
+
+    function selectAnswer(e) {
+      const selectedBtn = e.target;
+      const isCorrect = selectedBtn.dataset.correct === 'true';
+      const rationale = selectedBtn.dataset.rationale;
+
+      if (isCorrect) {
+        score++;
+        resultTitleEl.innerText = '正解！';
+        resultTitleEl.style.color = 'var(--correct-color)';
+      } else {
+        resultTitleEl.innerText = '不正解...';
+        resultTitleEl.style.color = 'var(--incorrect-color)';
+      }
+      
+      rationaleTextEl.innerText = rationale;
+      resultContainer.classList.remove('hide');
+      resultContainer.classList.add('animated');
+      hintBtn.style.display = 'none';
+
+      Array.from(answerButtonsEl.children).forEach(button => {
+        setStatusClass(button, button.dataset.correct === 'true');
+        button.disabled = true;
+      });
+
+      if (currentQuestions.length > currentQuizIndex + 1) {
+        nextBtn.classList.remove('hide');
+      } else {
+        nextBtn.innerText = '結果を見る';
+        nextBtn.classList.remove('hide');
+      }
+    }
+
+    function setStatusClass(element, correct) {
+      element.classList.remove('correct', 'incorrect');
+      if (correct) {
+        element.classList.add('correct');
+      } else {
+        element.classList.add('incorrect');
+      }
+    }
+
+    function updateProgressBar() {
+      const progressPercent = ((currentQuizIndex + 1) / currentQuestions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    hintBtn.addEventListener('click', () => {
+      const currentQuiz = currentQuestions[currentQuizIndex];
+      resultTitleEl.innerText = 'ヒント';
+      resultTitleEl.style.color = 'var(--text-color)';
+      rationaleTextEl.innerText = currentQuiz.hint || "ヒントはありません";
+      resultContainer.classList.remove('hide');
+      resultContainer.classList.add('animated');
+      hintBtn.style.display = 'none';
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentQuizIndex++;
+      if (currentQuizIndex < currentQuestions.length) {
+        showQuestion();
+      } else {
+        showFinalResult();
+      }
+    });
+
+    function showFinalResult() {
+      quizInterface.classList.add('hide');
+      finalResultContainer.classList.remove('hide');
+      finalResultContainer.classList.add('animated');
+      scoreEl.innerText = score;
+      totalFinalEl.innerText = currentQuestions.length;
+    }
+
+    restartBtn.addEventListener('click', () => startQuiz(currentQuestions, currentResources, headerTitle.innerText));
+    
+    backToMenuBtn.addEventListener('click', () => {
+      fetchSheetList();
+    });
+    
+    homeBtn.addEventListener('click', showMenu);
+
+  </script>
+</body>
+</html>
+
