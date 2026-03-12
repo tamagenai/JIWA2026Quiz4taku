@@ -4,153 +4,675 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中国語4択クイズ</title>
+  <title>中国語学習の旅(4択)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <style>
+    /* CSS Variables for a more maintainable theme */
     :root {
-      --primary-color: #007bff;
-      --correct-color: #28a745;
-      --incorrect-color: #dc3545;
-      --neutral-color: #f8f9fa;
-      --text-color: #212529;
-      --border-color: #dee2e6;
-      --overlay-bg: rgba(0, 0, 0, 0.85);
+      --primary-red: #D22B2B; /* Deep Chinese Red */
+      --primary-gold: #FFD700; /* Gold */
+      --secondary-green: #3CB371; /* Jade Green */
+      --secondary-blue: #4682B4; /* Serene Blue */
+      --text-dark: #333333;
+      --text-light: #F0F2F5;
+      --bg-light: #F8F9FA;
+      --bg-dark: #2C3E50; /* Darker background for contrast */
+      --border-light: #E0E0E0;
+      --shadow-color: rgba(0, 0, 0, 0.15);
+      --correct-color: var(--secondary-green);
+      --incorrect-color: var(--primary-red);
+      --info-color: #17a2b8;
     }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    html.js .animated { animation: 0.5s fadeIn ease-out; }
+    /* Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
 
     body {
-      font-family: 'Helvetica Neue', 'Arial', sans-serif;
-      background-color: #f0f2f5;
-      color: var(--text-color);
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; margin: 0; padding: 1rem; box-sizing: border-box;
-    }
-
-    #app-container {
-      background-color: #fff; border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      width: 100%; max-width: 600px; overflow: hidden;
-      min-height: 400px; position: relative;
-    }
-
-    #header {
-      background-color: var(--primary-color); color: white;
-      padding: 1.5rem; text-align: center; position: relative;
-    }
-    #header h1 { margin: 0; font-size: 1.5rem; }
-
-    /* メニュー画面 */
-    #menu-content { padding: 2rem; }
-    .quiz-list-btn {
-      width: 100%; padding: 1rem; margin-bottom: 1rem;
-      background-color: white; border: 2px solid var(--primary-color);
-      color: var(--primary-color); border-radius: 10px;
-      font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
-    }
-    .quiz-list-btn:hover { background-color: var(--primary-color); color: white; }
-
-    /* クイズ画面 */
-    #main-content { padding: 1.5rem 2rem; }
-    #progress-bar-container { width: 100%; height: 8px; background-color: #e9ecef; }
-    #progress-bar { width: 0%; height: 100%; background-color: var(--primary-color); transition: width 0.4s; }
-    
-    #info-header {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;
-    }
-    #progress-text { color: #6c757d; font-size: 0.9rem; margin-top: 5px;}
-    
-    #resource-buttons-container {
-      display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end;
-    }
-    .resource-btn {
-      background-color: #17a2b8; color: white; border: none;
-      padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;
-      cursor: pointer; display: flex; align-items: center; gap: 5px;
-      transition: background 0.2s; text-decoration: none;
-    }
-    .resource-btn:hover { background-color: #138496; }
-    .resource-btn::before { content: '🔗'; } /* アイコン */
-
-    #question { font-size: 1.2rem; margin-bottom: 1.5rem; line-height: 1.6; }
-    .btn-grid { display: grid; gap: 0.75rem; }
-    .btn {
-      background-color: var(--neutral-color); border: 1px solid var(--border-color);
-      border-radius: 8px; padding: 1rem; font-size: 1rem; cursor: pointer;
-      text-align: left; width: 100%;
-    }
-    .btn:hover:not(:disabled) { border-color: var(--primary-color); background-color: #e7f1ff; }
-    .btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); }
-    .btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); }
-    
-    #controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
-    .control-btn {
-      background-color: transparent; border: 1px solid var(--primary-color);
-      color: var(--primary-color); padding: 0.6rem 1.2rem; border-radius: 20px; cursor: pointer;
-    }
-    .control-btn:hover { background-color: var(--primary-color); color: white; }
-    
-    /* モーダル */
-    #modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: var(--overlay-bg); z-index: 1000;
-      display: flex; justify-content: center; align-items: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    #modal-overlay.active { opacity: 1; pointer-events: auto; }
-    
-    #modal-content {
-      background: white; width: 90%; max-width: 800px; height: 80%;
-      border-radius: 10px; position: relative; display: flex; flex-direction: column;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    #modal-header {
-      padding: 10px 15px; border-bottom: 1px solid #ddd;
-      display: flex; justify-content: space-between; align-items: center;
-      background: #f8f9fa; border-radius: 10px 10px 0 0;
-    }
-    #modal-title { font-weight: bold; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    /* モーダルヘッダーのボタン群 */
-    .modal-header-btns { display: flex; gap: 10px; align-items: center; }
-    
-    #modal-external-link {
-      text-decoration: none; color: #007bff; font-size: 0.9rem;
-      display: flex; align-items: center; gap: 4px;
-    }
-    #modal-external-link:hover { text-decoration: underline; }
-    
-    #modal-close-btn {
-      background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0 5px;
-    }
-    
-    #modal-body {
-      flex: 1; padding: 0; overflow: hidden; background: #000; /* 動画用に黒背景 */
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f2f5 0%, #e0e2e5 100%); /* Subtle gradient */
+      color: var(--text-dark);
+      overflow: hidden; /* Prevent scrollbar from background */
       position: relative;
     }
-    #modal-iframe {
-      width: 100%; height: 100%; border: none;
+
+    /* Background pattern - Abstract Chinese landscape/clouds */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><filter id="f1" x="-50%" y="-50%" width="200%" height="200%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise"/><feDiffuseLighting in="noise" lighting-color="%23A9D9D9" surfaceScale="5" result="light"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting><feComposite in="SourceGraphic" in2="light" operator="arithmetic" k1="1" k2="0" k3="0" k4="0"/></filter></defs><rect width="100%" height="100%" fill="%23F0F2F5"/><circle cx="20" cy="80" r="15" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.4"/><circle cx="80" cy="20" r="18" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.3"/><circle cx="50" cy="50" r="12" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.5"/><path d="M0,70 Q25,50 50,70 T100,70 L100,100 L0,100 Z" fill="%23D9E8F0" opacity="0.7"/><path d="M0,80 Q25,60 50,80 T100,80 L100,100 L0,100 Z" fill="%23C2D7E0" opacity="0.6"/></svg>');
+      background-size: cover;
+      opacity: 0.3; /* Subtle transparency */
+      z-index: -1;
     }
 
-    /* ローディング */
+    /* App Container */
+    #app-container {
+      background-color: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px var(--shadow-color);
+      width: 100%;
+      max-width: 680px; /* Slightly wider */
+      overflow: hidden;
+      min-height: 500px; /* Taller */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(0);
+      transition: transform 0.6s ease-out, box-shadow 0.6s ease-out;
+    }
+    #app-container.modal-open {
+      transform: translateY(-20px) scale(0.98); /* Shrink slightly when modal is open */
+      box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    /* Header */
+    #header {
+      background: linear-gradient(45deg, var(--primary-red), #E04E4E);
+      color: white;
+      padding: 1.8rem 1rem;
+      text-align: center;
+      position: relative;
+      border-bottom: 3px solid var(--primary-gold); /* Golden border */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    #header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-family: 'Zhi Mang Xing', cursive; /* Chinese calligraphy style for title */
+      letter-spacing: 2px;
+      position: relative;
+      display: inline-block;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    #header h1::before, #header h1::after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 3px;
+      background-color: var(--primary-gold);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    #header h1::before { left: -50px; }
+    #header h1::after { right: -50px; }
+
+    /* Home Button */
+    #home-btn {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #home-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+      border-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    #home-btn::before { content: '🏠'; }
+
+    /* Loading Screen */
     #loading {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255,255,255,0.9); z-index: 100;
-      display: flex; justify-content: center; align-items: center; flex-direction: column;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.95);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: opacity 0.3s ease-in-out;
     }
     .spinner {
-      width: 40px; height: 40px; border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--primary-color); border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 1rem;
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary-red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #loading-text {
+      color: var(--text-dark);
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
 
+    /* Menu Content (Quiz List) */
+    #menu-content {
+      padding: 2.5rem;
+      flex-grow: 1;
+      overflow-y: auto;
+      background-color: var(--bg-light);
+    }
+    #quiz-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+      gap: 1.5rem;
+    }
+    .quiz-list-btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1.5rem;
+      background-color: white;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+    }
+    .quiz-list-btn:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 8px 25px var(--shadow-color);
+    }
+    .quiz-list-btn::before { /* Decorative corner */
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      border-bottom-right-radius: 15px;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 0 40px 40px;
+      border-color: transparent transparent var(--primary-red) transparent; /* Default accent */
+      opacity: 0.1;
+      transition: all 0.3s ease;
+    }
+    .quiz-list-btn:nth-child(2n)::before { border-color: transparent transparent var(--secondary-green) transparent; }
+    .quiz-list-btn:nth-child(3n)::before { border-color: transparent transparent var(--secondary-blue) transparent; }
+    .quiz-list-btn:hover::before { opacity: 0.3; }
+
+    .quiz-list-btn .icon {
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+      color: var(--primary-red); /* Default icon color */
+    }
+    .quiz-list-btn:nth-child(2n) .icon { color: var(--secondary-green); }
+    .quiz-list-btn:nth-child(3n) .icon { color: var(--secondary-blue); }
+
+    .quiz-list-btn .progress-bar-small {
+        width: 100%; height: 6px; background-color: #e9ecef; border-radius: 3px; margin-top: 10px;
+    }
+    .quiz-list-btn .progress-bar-small div {
+        height: 100%; background-color: var(--primary-red); border-radius: 3px;
+        transition: width 0.4s ease;
+    }
+    .quiz-list-btn:nth-child(2n) .progress-bar-small div { background-color: var(--secondary-green); }
+    .quiz-list-btn:nth-child(3n) .progress-bar-small div { background-color: var(--secondary-blue); }
+
+    .quiz-list-btn .status-tag {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 10px;
+        background-color: var(--info-color);
+        color: white;
+        margin-top: 10px;
+        align-self: flex-end; /* Align to bottom right */
+    }
+    /* Quiz Interface */
+    #quiz-interface {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-light);
+    }
+    #progress-bar-container {
+      width: 100%;
+      height: 10px;
+      background: linear-gradient(to right, #e0e2e5, #e9ecef);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(45deg, var(--primary-red), var(--primary-gold)); /* Gradient progress */
+      border-radius: 0 5px 5px 0;
+      transition: width 0.4s ease-out;
+    }
+
+    #main-content {
+      padding: 2rem 2.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    #info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center; /* Align items vertically center */
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border-light);
+    }
+    #progress-text {
+      color: #6c757d;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    #resource-buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .resource-btn {
+      background-color: var(--info-color);
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s ease, transform 0.2s ease;
+      text-decoration: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .resource-btn:hover {
+      background-color: #138496;
+      transform: translateY(-2px);
+    }
+    .resource-btn.video::before { content: '🎥'; }
+    .resource-btn.document::before { content: '📄'; }
+    .resource-btn.link::before { content: '🔗'; }
+
+
+    #question {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+      font-weight: bold;
+      color: var(--text-dark);
+      text-align: center;
+      background-color: #FDFDFD;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-light);
+    }
+    .btn-grid {
+      display: grid;
+      gap: 1rem;
+      flex-grow: 1;
+    }
+    .btn {
+      background-color: white;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.2rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+    .btn:hover:not(:disabled) {
+      border-color: var(--primary-red);
+      background-color: #FFF0F0;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .btn.correct {
+      background-color: var(--correct-color);
+      color: white;
+      border-color: var(--correct-color);
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+      animation: flashGreen 0.5s forwards;
+    }
+    .btn.incorrect {
+      background-color: var(--incorrect-color);
+      color: white;
+      border-color: var(--incorrect-color);
+      box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+      animation: shake 0.5s forwards;
+    }
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    @keyframes flashGreen {
+        0% { background-color: var(--correct-color); transform: scale(1); }
+        50% { background-color: lighten(var(--correct-color), 10%); transform: scale(1.03); }
+        100% { background-color: var(--correct-color); transform: scale(1.02); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    #result-container {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: #FDFDFD;
+      border-radius: 15px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    #result-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    #result-title.correct::before { content: '🎉'; font-size: 1.5em; }
+    #result-title.incorrect::before { content: '🤔'; font-size: 1.5em; }
+    #rationale-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #555;
+    }
+
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+    .control-btn {
+      background: linear-gradient(45deg, var(--primary-red), #E04E4E);
+      color: white;
+      padding: 0.8rem 1.8rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .control-btn.secondary {
+        background: linear-gradient(45deg, var(--secondary-blue), #66A3D2);
+    }
+    .control-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      opacity: 0.9;
+    }
+    .control-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Modal */
+    #modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #modal-content {
+      background: white;
+      width: 95%;
+      max-width: 900px; /* Wider modal */
+      height: 85%; /* Taller modal */
+      border-radius: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      transform: scale(0.9);
+      transition: transform 0.4s ease;
+    }
+    #modal-overlay.active #modal-content {
+      transform: scale(1);
+    }
+    #modal-header {
+      padding: 15px 25px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+      border-radius: 20px 20px 0 0;
+    }
+    #modal-title {
+      font-weight: bold;
+      margin: 0;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.2rem;
+      color: var(--text-dark);
+    }
+    .modal-header-btns {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    #modal-external-link {
+      text-decoration: none;
+      color: var(--secondary-blue);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
+    #modal-external-link:hover {
+      color: #2F638A;
+      text-decoration: underline;
+    }
+    #modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #666;
+      padding: 0 5px;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    #modal-close-btn:hover {
+      transform: rotate(90deg);
+      color: var(--primary-red);
+    }
+    #modal-body {
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+      border-radius: 0 0 20px 20px;
+    }
+    #modal-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Final Result */
+    #final-result-container {
+      padding: 3rem 2rem;
+      text-align: center;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-color: var(--bg-light);
+    }
+    #final-result-container h2 {
+      font-size: 2.5rem;
+      color: var(--primary-red);
+      margin-bottom: 1.5rem;
+      font-family: 'Zhi Mang Xing', cursive;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+    }
+    #final-result-container p {
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      margin-bottom: 2.5rem;
+      font-weight: bold;
+    }
+    #score {
+      font-size: 2em;
+      color: var(--secondary-green);
+      animation: scorePop 0.6s ease-out;
+      display: inline-block;
+      min-width: 40px; /* Prevent jump when score changes */
+    }
+    @keyframes scorePop {
+        0% { transform: scale(0.5); opacity: 0; }
+        70% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); }
+    }
+
+    #total-final {
+        color: #888;
+        font-size: 0.8em;
+    }
+
+    #final-result-container div {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+    #restart-btn {
+        background: linear-gradient(45deg, var(--secondary-green), #5CB85C);
+    }
+    #restart-btn:hover {
+        background: linear-gradient(45deg, #5CB85C, var(--secondary-green));
+    }
+    #back-to-menu-btn {
+        background: linear-gradient(45deg, var(--secondary-blue), #66A3D2);
+    }
+    #back-to-menu-btn:hover {
+        background: linear-gradient(45deg, #66A3D2, var(--secondary-blue));
+    }
+
+
+    /* Utility Classes */
     .hide { display: none !important; }
-    #home-btn {
-      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-      background: none; border: 1px solid white; color: white;
-      padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+    .animated { animation: fadeIn 0.8s ease-out forwards; } /* Slower fade in */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      #app-container {
+        border-radius: 0;
+        min-height: 100vh;
+        max-width: 100%;
+        box-shadow: none;
+      }
+      #header {
+        padding: 1.2rem 1rem;
+      }
+      #header h1 {
+        font-size: 1.6rem;
+      }
+      #header h1::before, #header h1::after {
+        width: 25px;
+        left: -35px;
+        right: -35px;
+      }
+      #menu-content, #main-content, #final-result-container {
+        padding: 1.5rem;
+      }
+      #quiz-list {
+        grid-template-columns: 1fr;
+      }
+      #question {
+        font-size: 1.3rem;
+        padding: 1rem;
+      }
+      .btn {
+        font-size: 1rem;
+        padding: 1rem;
+      }
+      #info-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      #resource-buttons-container {
+        justify-content: flex-start;
+      }
+      #controls {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .control-btn {
+        width: 100%;
+      }
+      #modal-content {
+        width: 98%;
+        height: 95%;
+      }
+      #modal-title {
+        font-size: 1rem;
+      }
+      .modal-header-btns {
+        gap: 10px;
+      }
+      #modal-external-link {
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
@@ -186,24 +708,24 @@
         <h2 id="question"></h2>
         <div id="answer-buttons" class="btn-grid"></div>
         
-        <div id="result-container" class="hide" style="margin-top: 1.5rem;">
+        <div id="result-container" class="hide">
           <h3 id="result-title"></h3>
           <p id="rationale-text"></p>
         </div>
 
         <div id="controls">
-          <button id="hint-btn" class="control-btn">ヒントを見る</button>
+          <button id="hint-btn" class="control-btn secondary">ヒントを見る</button>
           <button id="next-btn" class="control-btn hide">次の問題へ</button>
         </div>
       </div>
     </div>
 
-    <div id="final-result-container" class="hide" style="padding: 2rem; text-align: center;">
-      <h2>クイズ終了！</h2>
-      <p style="font-size: 1.2rem;">スコア: <span id="score"></span> / <span id="total-final"></span></p>
-      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+    <div id="final-result-container" class="hide">
+      <h2>中国語の旅、素晴らしい成果！</h2>
+      <p>あなたのスコア: <span id="score"></span> / <span id="total-final"></span></p>
+      <div>
         <button id="restart-btn" class="control-btn">もう一度挑戦する</button>
-        <button id="back-to-menu-btn" class="control-btn">一覧に戻る</button>
+        <button id="back-to-menu-btn" class="control-btn secondary">クイズ一覧へ</button>
       </div>
     </div>
   </div>
@@ -238,7 +760,8 @@
     const quizInterface = document.getElementById('quiz-interface');
     const headerTitle = document.getElementById('header-title');
     const homeBtn = document.getElementById('home-btn');
-    
+    const appContainer = document.getElementById('app-container'); // Added for modal styling
+
     const questionEl = document.getElementById('question');
     const answerButtonsEl = document.getElementById('answer-buttons');
     const nextBtn = document.getElementById('next-btn');
@@ -267,11 +790,13 @@
     let currentResources = [];
     let currentQuizIndex = 0;
     let score = 0;
+    let quizSheetName = ''; // To store the current quiz's sheet name
 
     // --- 初期化 ---
     document.documentElement.classList.remove('no-js');
     document.documentElement.classList.add('js');
     
+    // Service Workerの登録解除は変更なし
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) {
@@ -340,14 +865,39 @@
     function renderQuizList(sheets) {
       quizListEl.innerHTML = '';
       if (sheets.length === 0) {
-        quizListEl.innerHTML = '<p>クイズが見つかりません。</p>';
+        quizListEl.innerHTML = '<p style="text-align: center; color: #666; font-size: 1.1rem; margin-top: 3rem;">クイズが見つかりません。<br>Google Spreadsheetにシートを作成して、A1セルにJSON形式のクイズデータを入れてください。</p>';
         return;
       }
 
       sheets.forEach(sheetName => {
         const btn = document.createElement('button');
-        btn.innerText = sheetName;
         btn.classList.add('quiz-list-btn');
+
+        // アイコンを追加 (仮のアイコン。必要に応じてカスタマイズしてください)
+        let icon = '💡'; // Default icon
+        if (sheetName.includes('単語')) icon = '📚';
+        else if (sheetName.includes('文法')) icon = '📝';
+        else if (sheetName.includes('文化')) icon = '🇨🇳';
+        else if (sheetName.includes('会話')) icon = '🗣️';
+        else if (sheetName.includes('挑戦')) icon = '🏆';
+        
+        btn.innerHTML = `<span class="icon">${icon}</span><span>${sheetName}</span>`;
+
+        // 仮の進行状況/ステータス表示
+        // ここは実際の進捗データと連携させるとより良いです
+        let progress = Math.floor(Math.random() * 100);
+        let statusTag = '';
+        if (progress === 0) {
+            statusTag = '<span class="status-tag" style="background-color: #6c757d;">未挑戦</span>';
+        } else if (progress < 100) {
+            btn.innerHTML += `<div class="progress-bar-small"><div style="width: ${progress}%"></div></div>`;
+            statusTag = `<span class="status-tag" style="background-color: var(--info-color);">${progress}%完了</span>`;
+        } else {
+            btn.innerHTML += `<div class="progress-bar-small"><div style="width: 100%"></div></div>`;
+            statusTag = '<span class="status-tag" style="background-color: var(--correct-color);">完了済み</span>';
+        }
+        btn.innerHTML += statusTag;
+
         btn.addEventListener('click', () => fetchQuizData(sheetName));
         quizListEl.appendChild(btn);
       });
@@ -360,6 +910,8 @@
       finalResultContainer.classList.add('hide');
       homeBtn.classList.add('hide');
       headerTitle.innerText = 'クイズ一覧';
+      headerTitle.style.fontFamily = `'Zhi Mang Xing', cursive`; // Menu title style
+      headerTitle.innerHTML = `<h1>クイズ一覧</h1>`; // Re-add decorations
     }
 
     function showLoading(msg) {
@@ -376,8 +928,9 @@
     function startQuiz(questions, resources, title) {
       currentQuestions = questions;
       currentResources = resources;
+      quizSheetName = title; // Store the sheet name
       
-      currentQuestions.sort(() => Math.random() - 0.5);
+      currentQuestions.sort(() => Math.random() - 0.5); // Shuffle questions
       
       currentQuizIndex = 0;
       score = 0;
@@ -386,7 +939,9 @@
       finalResultContainer.classList.add('hide');
       quizInterface.classList.remove('hide');
       homeBtn.classList.remove('hide');
-      headerTitle.innerText = title;
+      headerTitle.innerText = title; // Use the actual quiz title
+      headerTitle.style.fontFamily = `'Noto Sans JP', sans-serif`; // Quiz title style
+      headerTitle.innerHTML = `<h1>${title}</h1>`; // Reset decorations
       
       totalQuestionsEl.innerText = currentQuestions.length;
       
@@ -402,6 +957,14 @@
         const btn = document.createElement('button');
         btn.innerText = res.name;
         btn.classList.add('resource-btn');
+        // Determine icon based on URL content
+        if (res.url.includes('youtube.com') || res.url.includes('youtu.be')) {
+            btn.classList.add('video');
+        } else if (res.url.includes('.pdf') || res.url.includes('drive.google.com') && !res.url.includes('view')) { // Heuristic for documents
+            btn.classList.add('document');
+        } else {
+            btn.classList.add('link');
+        }
         btn.addEventListener('click', () => openModal(res.name, res.url));
         resourceButtonsContainer.appendChild(btn);
       });
@@ -419,17 +982,18 @@
       if (url.includes('drive.google.com') && url.includes('/view')) {
         embedUrl = url.replace('/view', '/preview');
       }
-      // 2. YouTube (youtu.be または youtube.com/watch?v=...)
+      // 2. YouTube (youtu.be または ...)
       else if (url.includes('youtube.com') || url.includes('youtu.be')) {
         const videoId = extractYouTubeId(url);
         if (videoId) {
-          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+          embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`; // Autoplay added
         }
       }
       // 3. その他のWebサイトはそのまま表示（表示できない場合は別タブボタンを使ってもらう）
 
       modalIframe.src = embedUrl;
       modalOverlay.classList.add('active');
+      appContainer.classList.add('modal-open'); // Apply blur/scale effect to main app
     }
 
     // YouTube ID抽出ヘルパー関数
@@ -441,7 +1005,8 @@
 
     function closeModal() {
       modalOverlay.classList.remove('active');
-      modalIframe.src = "";
+      modalIframe.src = ""; // Stop video playback
+      appContainer.classList.remove('modal-open');
     }
 
     modalCloseBtn.addEventListener('click', closeModal);
@@ -460,7 +1025,10 @@
       questionEl.innerText = currentQuiz.question;
       questionEl.classList.add('animated');
       
-      currentQuiz.answerOptions.forEach(answer => {
+      // Shuffle answer options for variety
+      const shuffledOptions = [...currentQuiz.answerOptions].sort(() => Math.random() - 0.5);
+
+      shuffledOptions.forEach(answer => {
         const button = document.createElement('button');
         button.innerText = answer.text;
         button.classList.add('btn', 'animated');
@@ -474,12 +1042,13 @@
     function resetState() {
       nextBtn.classList.add('hide');
       nextBtn.innerText = '次の問題へ';
-      hintBtn.style.display = '';
+      hintBtn.classList.remove('hide'); // Ensure hint button is visible
       resultContainer.classList.add('hide');
+      resultTitleEl.classList.remove('correct', 'incorrect'); // Clear result title styling
       while (answerButtonsEl.firstChild) {
         answerButtonsEl.removeChild(answerButtonsEl.firstChild);
       }
-      questionEl.classList.remove('animated');
+      questionEl.classList.remove('animated'); // Remove to re-add on next question
     }
 
     function selectAnswer(e) {
@@ -489,21 +1058,23 @@
 
       if (isCorrect) {
         score++;
-        resultTitleEl.innerText = '正解！';
+        resultTitleEl.innerText = '正解！ 🎉';
         resultTitleEl.style.color = 'var(--correct-color)';
+        resultTitleEl.classList.add('correct');
       } else {
-        resultTitleEl.innerText = '不正解...';
+        resultTitleEl.innerText = '不正解... 🤔';
         resultTitleEl.style.color = 'var(--incorrect-color)';
+        resultTitleEl.classList.add('incorrect');
       }
       
       rationaleTextEl.innerText = rationale;
       resultContainer.classList.remove('hide');
       resultContainer.classList.add('animated');
-      hintBtn.style.display = 'none';
+      hintBtn.classList.add('hide'); // Hide hint after answering
 
       Array.from(answerButtonsEl.children).forEach(button => {
         setStatusClass(button, button.dataset.correct === 'true');
-        button.disabled = true;
+        button.disabled = true; // Disable all buttons after selection
       });
 
       if (currentQuestions.length > currentQuizIndex + 1) {
@@ -524,18 +1095,19 @@
     }
 
     function updateProgressBar() {
-      const progressPercent = ((currentQuizIndex + 1) / currentQuestions.length) * 100;
+      const progressPercent = ((currentQuizIndex) / currentQuestions.length) * 100; // currentQuizIndex starts from 0
       progressBar.style.width = `${progressPercent}%`;
     }
 
     hintBtn.addEventListener('click', () => {
       const currentQuiz = currentQuestions[currentQuizIndex];
       resultTitleEl.innerText = 'ヒント';
-      resultTitleEl.style.color = 'var(--text-color)';
-      rationaleTextEl.innerText = currentQuiz.hint || "ヒントはありません";
+      resultTitleEl.style.color = 'var(--text-dark)';
+      resultTitleEl.classList.remove('correct', 'incorrect');
+      rationaleTextEl.innerText = currentQuiz.hint || "ヒントはありません。";
       resultContainer.classList.remove('hide');
       resultContainer.classList.add('animated');
-      hintBtn.style.display = 'none';
+      hintBtn.classList.add('hide'); // Hide hint after showing it
     });
 
     nextBtn.addEventListener('click', () => {
@@ -555,7 +1127,7 @@
       totalFinalEl.innerText = currentQuestions.length;
     }
 
-    restartBtn.addEventListener('click', () => startQuiz(currentQuestions, currentResources, headerTitle.innerText));
+    restartBtn.addEventListener('click', () => startQuiz(currentQuestions, currentResources, quizSheetName));
     
     backToMenuBtn.addEventListener('click', () => {
       fetchSheetList();
@@ -563,7 +1135,9 @@
     
     homeBtn.addEventListener('click', showMenu);
 
+    // Initial progress bar update for the first question
+    progressBar.style.width = '0%';
+
   </script>
 </body>
 </html>
-
