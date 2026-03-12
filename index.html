@@ -39,14 +39,14 @@
       min-height: 100vh;
       background: linear-gradient(135deg, #f0f2f5 0%, #e0e2e5 100%); /* Subtle gradient */
       color: var(--text-dark);
-      overflow: hidden; /* Prevent scrollbar from background */
+      overflow-y: auto; /* bodyがスクロールできるように変更 */
       position: relative;
     }
 
     /* Background pattern - Abstract Chinese landscape/clouds */
     body::before {
       content: '';
-      position: absolute;
+      position: fixed; /* 固定にしてスクロールしても動かないように */
       top: 0;
       left: 0;
       width: 100%;
@@ -64,13 +64,14 @@
       box-shadow: 0 8px 30px var(--shadow-color);
       width: 100%;
       max-width: 680px; /* Slightly wider */
-      overflow: hidden;
-      min-height: 500px; /* Taller */
+      /* min-height: 500px; /* Taller */ /* min-height を削除またはコメントアウト */
+      overflow: hidden; /* App container itself should not scroll, internal content will */
       position: relative;
       display: flex;
       flex-direction: column;
       transform: translateY(0);
       transition: transform 0.6s ease-out, box-shadow 0.6s ease-out;
+      margin: 20px; /* スマホで端に寄りすぎないように余白を追加 */
     }
     #app-container.modal-open {
       transform: translateY(-20px) scale(0.98); /* Shrink slightly when modal is open */
@@ -168,7 +169,7 @@
     #menu-content {
       padding: 2.5rem;
       flex-grow: 1;
-      overflow-y: auto;
+      overflow-y: auto; /* コンテンツがはみ出たらスクロール */
       background-color: var(--bg-light);
     }
     #quiz-list {
@@ -271,6 +272,8 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
+      overflow-y: auto; /* クイズコンテンツがはみ出したら内部でスクロール */
+      -webkit-overflow-scrolling: touch; /* iOSのスクロールを滑らかに */
     }
     #info-header {
       display: flex;
@@ -330,7 +333,7 @@
     .btn-grid {
       display: grid;
       gap: 1rem;
-      flex-grow: 1;
+      /* flex-grow: 1; を削除またはコメントアウト。高さの計算を自動に任せる */
     }
     .btn {
       background-color: white;
@@ -372,9 +375,11 @@
         opacity: 0.8;
     }
 
+    /* @keyframes flashGreen { ... } は変更なし */
+    /* @keyframes shake { ... } は変更なし */
     @keyframes flashGreen {
         0% { background-color: var(--correct-color); transform: scale(1); }
-        50% { background-color: lighten(var(--correct-color), 10%); transform: scale(1.03); }
+        50% { background-color: #5eff5e; transform: scale(1.03); } /* Lighten color for effect */
         100% { background-color: var(--correct-color); transform: scale(1.02); }
     }
     @keyframes shake {
@@ -382,6 +387,7 @@
       20%, 60% { transform: translateX(-5px); }
       40%, 80% { transform: translateX(5px); }
     }
+
 
     #result-container {
       margin-top: 2rem;
@@ -391,6 +397,8 @@
       border: 1px solid var(--border-light);
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       text-align: center;
+      /* min-height を追加して、内容が少ない場合でも形が崩れないように */
+      min-height: 120px;
     }
     #result-title {
       font-size: 1.8rem;
@@ -414,6 +422,8 @@
       justify-content: space-between;
       margin-top: 2rem;
       gap: 1rem;
+      flex-shrink: 0; /* スクロールしてもボタンが常に表示されるように */
+      padding-bottom: 1rem; /* ボタンの下に少し余白 */
     }
     .control-btn {
       background: linear-gradient(45deg, var(--primary-red), #E04E4E);
@@ -614,11 +624,15 @@
 
     /* Responsive Adjustments */
     @media (max-width: 768px) {
+      body {
+        padding: 0; /* bodyのpaddingをなくす */
+      }
       #app-container {
         border-radius: 0;
-        min-height: 100vh;
+        min-height: 100vh; /* スマホでは画面いっぱいに */
         max-width: 100%;
         box-shadow: none;
+        margin: 0; /* マージンをなくす */
       }
       #header {
         padding: 1.2rem 1rem;
@@ -632,7 +646,7 @@
         right: -35px;
       }
       #menu-content, #main-content, #final-result-container {
-        padding: 1.5rem;
+        padding: 1rem; /* パディングを小さくしてスペースを確保 */
       }
       #quiz-list {
         grid-template-columns: 1fr;
@@ -640,6 +654,7 @@
       #question {
         font-size: 1.3rem;
         padding: 1rem;
+        margin-bottom: 1.5rem; /* マージンを調整 */
       }
       .btn {
         font-size: 1rem;
@@ -648,17 +663,50 @@
       #info-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: 0.8rem; /* ギャップを調整 */
+        margin-bottom: 1rem;
+      }
+      #progress-text {
+        order: -1; /* 問題番号を上に移動 */
+        width: 100%;
+        text-align: right;
       }
       #resource-buttons-container {
         justify-content: flex-start;
+        width: 100%;
+      }
+      .resource-btn {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+      }
+      #result-container {
+        margin-top: 1.5rem;
+        padding: 1rem;
+      }
+      #result-title {
+        font-size: 1.5rem;
+      }
+      #rationale-text {
+        font-size: 1rem;
       }
       #controls {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.8rem; /* ギャップを調整 */
+        margin-top: 1.5rem;
       }
       .control-btn {
         width: 100%;
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+      }
+      #final-result-container h2 {
+        font-size: 2rem;
+      }
+      #final-result-container p {
+        font-size: 1.3rem;
+      }
+      #score {
+        font-size: 1.8em;
       }
       #modal-content {
         width: 98%;
@@ -674,470 +722,29 @@
         font-size: 0.85rem;
       }
     }
+
+    /* iPad (Tablet) 向けの調整 (768px - 1024px くらい) */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        #app-container {
+            margin: 40px auto; /* 左右に少し余白 */
+            border-radius: 15px;
+            max-width: 700px;
+        }
+        #menu-content, #main-content, #final-result-container {
+            padding: 1.8rem 2rem;
+        }
+        #quiz-list {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        #question {
+            font-size: 1.4rem;
+        }
+        .btn {
+            font-size: 1.05rem;
+        }
+        #controls {
+            flex-direction: row; /* 横並びを維持 */
+            justify-content: space-between;
+        }
+    }
   </style>
-</head>
-
-<body>
-  <div id="app-container">
-    <div id="header">
-      <button id="home-btn" class="hide">一覧へ</button>
-      <h1 id="header-title">クイズ一覧</h1>
-    </div>
-
-    <div id="loading">
-      <div class="spinner"></div>
-      <p id="loading-text">データを読み込み中...</p>
-    </div>
-
-    <div id="menu-content">
-      <div id="quiz-list"></div>
-    </div>
-
-    <div id="quiz-interface" class="hide">
-      <div id="progress-bar-container">
-        <div id="progress-bar"></div>
-      </div>
-      <div id="main-content">
-        <div id="info-header">
-          <div id="resource-buttons-container"></div>
-          <div id="progress-text">
-            問題 <span id="question-number"></span> / <span id="total-questions"></span>
-          </div>
-        </div>
-
-        <h2 id="question"></h2>
-        <div id="answer-buttons" class="btn-grid"></div>
-        
-        <div id="result-container" class="hide">
-          <h3 id="result-title"></h3>
-          <p id="rationale-text"></p>
-        </div>
-
-        <div id="controls">
-          <button id="hint-btn" class="control-btn secondary">ヒントを見る</button>
-          <button id="next-btn" class="control-btn hide">次の問題へ</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="final-result-container" class="hide">
-      <h2>中国語の旅、素晴らしい成果！</h2>
-      <p>あなたのスコア: <span id="score"></span> / <span id="total-final"></span></p>
-      <div>
-        <button id="restart-btn" class="control-btn">もう一度挑戦する</button>
-        <button id="back-to-menu-btn" class="control-btn secondary">クイズ一覧へ</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- モーダル -->
-  <div id="modal-overlay">
-    <div id="modal-content">
-      <div id="modal-header">
-        <span id="modal-title">参考資料</span>
-        <div class="modal-header-btns">
-          <a id="modal-external-link" href="#" target="_blank" rel="noopener noreferrer">
-            ↗ 別タブで開く
-          </a>
-          <button id="modal-close-btn">×</button>
-        </div>
-      </div>
-      <div id="modal-body">
-        <iframe id="modal-iframe" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ★★★ ここにGASのウェブアプリURLを貼り付けてください ★★★
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzfew-aefASWtQY8Xqb_l4TXjNGoha7tUJRwcJQe-sgipicQxA27YwALEv3oM-mOzs/exec"; 
-
-    // DOM要素
-    const loadingEl = document.getElementById('loading');
-    const loadingText = document.getElementById('loading-text');
-    const menuContent = document.getElementById('menu-content');
-    const quizListEl = document.getElementById('quiz-list');
-    const quizInterface = document.getElementById('quiz-interface');
-    const headerTitle = document.getElementById('header-title');
-    const homeBtn = document.getElementById('home-btn');
-    const appContainer = document.getElementById('app-container'); // Added for modal styling
-
-    const questionEl = document.getElementById('question');
-    const answerButtonsEl = document.getElementById('answer-buttons');
-    const nextBtn = document.getElementById('next-btn');
-    const hintBtn = document.getElementById('hint-btn');
-    const resultContainer = document.getElementById('result-container');
-    const resultTitleEl = document.getElementById('result-title');
-    const rationaleTextEl = document.getElementById('rationale-text');
-    const questionNumberEl = document.getElementById('question-number');
-    const totalQuestionsEl = document.getElementById('total-questions');
-    const progressBar = document.getElementById('progress-bar');
-    
-    const resourceButtonsContainer = document.getElementById('resource-buttons-container');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-    const modalIframe = document.getElementById('modal-iframe');
-    const modalTitle = document.getElementById('modal-title');
-    const modalExternalLink = document.getElementById('modal-external-link');
-
-    const finalResultContainer = document.getElementById('final-result-container');
-    const scoreEl = document.getElementById('score');
-    const totalFinalEl = document.getElementById('total-final');
-    const restartBtn = document.getElementById('restart-btn');
-    const backToMenuBtn = document.getElementById('back-to-menu-btn');
-
-    let currentQuestions = [];
-    let currentResources = [];
-    let currentQuizIndex = 0;
-    let score = 0;
-    let quizSheetName = ''; // To store the current quiz's sheet name
-
-    // --- 初期化 ---
-    document.documentElement.classList.remove('no-js');
-    document.documentElement.classList.add('js');
-    
-    // Service Workerの登録解除は変更なし
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-    
-    fetchSheetList();
-
-    // --- API通信 ---
-
-    async function fetchSheetList() {
-      showLoading('クイズ一覧を取得中...');
-      try {
-        const response = await fetch(GAS_API_URL);
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-          renderQuizList(data.sheets);
-        } else {
-          alert('エラー: ' + data.message);
-        }
-      } catch (error) {
-        console.error(error);
-        alert('通信エラーが発生しました。');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    async function fetchQuizData(sheetName) {
-      showLoading(`${sheetName} を読み込み中...`);
-      try {
-        const url = `${GAS_API_URL}?action=getQuiz&sheetName=${encodeURIComponent(sheetName)}`;
-        const response = await fetch(url);
-        const json = await response.json();
-
-        if (json.status === 'success') {
-          let questions = [];
-          if (Array.isArray(json.data)) {
-            questions = json.data;
-          } else if (json.data.quiz && Array.isArray(json.data.quiz)) {
-            questions = json.data.quiz;
-          } else {
-            throw new Error('データの形式が不明です');
-          }
-          
-          const resources = json.resources || [];
-          startQuiz(questions, resources, sheetName);
-        } else {
-          alert('エラー: ' + json.message);
-          showMenu();
-        }
-      } catch (error) {
-        console.error(error);
-        alert('クイズデータの読み込みに失敗しました。');
-        showMenu();
-      } finally {
-        hideLoading();
-      }
-    }
-
-    // --- 画面遷移 ---
-
-    function renderQuizList(sheets) {
-      quizListEl.innerHTML = '';
-      if (sheets.length === 0) {
-        quizListEl.innerHTML = '<p style="text-align: center; color: #666; font-size: 1.1rem; margin-top: 3rem;">クイズが見つかりません。<br>Google Spreadsheetにシートを作成して、A1セルにJSON形式のクイズデータを入れてください。</p>';
-        return;
-      }
-
-      sheets.forEach(sheetName => {
-        const btn = document.createElement('button');
-        btn.classList.add('quiz-list-btn');
-
-        // アイコンを追加 (仮のアイコン。必要に応じてカスタマイズしてください)
-        let icon = '💡'; // Default icon
-        if (sheetName.includes('単語')) icon = '📚';
-        else if (sheetName.includes('文法')) icon = '📝';
-        else if (sheetName.includes('文化')) icon = '🇨🇳';
-        else if (sheetName.includes('会話')) icon = '🗣️';
-        else if (sheetName.includes('挑戦')) icon = '🏆';
-        
-        btn.innerHTML = `<span class="icon">${icon}</span><span>${sheetName}</span>`;
-
-        // 仮の進行状況/ステータス表示
-        // ここは実際の進捗データと連携させるとより良いです
-        let progress = Math.floor(Math.random() * 100);
-        let statusTag = '';
-        if (progress === 0) {
-            statusTag = '<span class="status-tag" style="background-color: #6c757d;">未挑戦</span>';
-        } else if (progress < 100) {
-            btn.innerHTML += `<div class="progress-bar-small"><div style="width: ${progress}%"></div></div>`;
-            statusTag = `<span class="status-tag" style="background-color: var(--info-color);">${progress}%完了</span>`;
-        } else {
-            btn.innerHTML += `<div class="progress-bar-small"><div style="width: 100%"></div></div>`;
-            statusTag = '<span class="status-tag" style="background-color: var(--correct-color);">完了済み</span>';
-        }
-        btn.innerHTML += statusTag;
-
-        btn.addEventListener('click', () => fetchQuizData(sheetName));
-        quizListEl.appendChild(btn);
-      });
-      showMenu();
-    }
-
-    function showMenu() {
-      menuContent.classList.remove('hide');
-      quizInterface.classList.add('hide');
-      finalResultContainer.classList.add('hide');
-      homeBtn.classList.add('hide');
-      headerTitle.innerText = 'クイズ一覧';
-      headerTitle.style.fontFamily = `'Zhi Mang Xing', cursive`; // Menu title style
-      headerTitle.innerHTML = `<h1>クイズ一覧</h1>`; // Re-add decorations
-    }
-
-    function showLoading(msg) {
-      loadingText.innerText = msg;
-      loadingEl.classList.remove('hide');
-    }
-
-    function hideLoading() {
-      loadingEl.classList.add('hide');
-    }
-
-    // --- クイズロジック ---
-
-    function startQuiz(questions, resources, title) {
-      currentQuestions = questions;
-      currentResources = resources;
-      quizSheetName = title; // Store the sheet name
-      
-      currentQuestions.sort(() => Math.random() - 0.5); // Shuffle questions
-      
-      currentQuizIndex = 0;
-      score = 0;
-      
-      menuContent.classList.add('hide');
-      finalResultContainer.classList.add('hide');
-      quizInterface.classList.remove('hide');
-      homeBtn.classList.remove('hide');
-      headerTitle.innerText = title; // Use the actual quiz title
-      headerTitle.style.fontFamily = `'Noto Sans JP', sans-serif`; // Quiz title style
-      headerTitle.innerHTML = `<h1>${title}</h1>`; // Reset decorations
-      
-      totalQuestionsEl.innerText = currentQuestions.length;
-      
-      renderResourceButtons();
-      showQuestion();
-    }
-
-    function renderResourceButtons() {
-      resourceButtonsContainer.innerHTML = '';
-      if (currentResources.length === 0) return;
-
-      currentResources.forEach(res => {
-        const btn = document.createElement('button');
-        btn.innerText = res.name;
-        btn.classList.add('resource-btn');
-        // Determine icon based on URL content
-        if (res.url.includes('youtube.com') || res.url.includes('youtu.be')) {
-            btn.classList.add('video');
-        } else if (res.url.includes('.pdf') || res.url.includes('drive.google.com') && !res.url.includes('view')) { // Heuristic for documents
-            btn.classList.add('document');
-        } else {
-            btn.classList.add('link');
-        }
-        btn.addEventListener('click', () => openModal(res.name, res.url));
-        resourceButtonsContainer.appendChild(btn);
-      });
-    }
-
-    // --- モーダル制御（URL変換ロジック） ---
-
-    function openModal(name, url) {
-      modalTitle.innerText = name;
-      modalExternalLink.href = url; // 別タブ用のリンクを設定
-      
-      let embedUrl = url;
-
-      // 1. Google Drive
-      if (url.includes('drive.google.com') && url.includes('/view')) {
-        embedUrl = url.replace('/view', '/preview');
-      }
-      // 2. YouTube (youtu.be または ...)
-      else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        const videoId = extractYouTubeId(url);
-        if (videoId) {
-          embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`; // Autoplay added
-        }
-      }
-      // 3. その他のWebサイトはそのまま表示（表示できない場合は別タブボタンを使ってもらう）
-
-      modalIframe.src = embedUrl;
-      modalOverlay.classList.add('active');
-      appContainer.classList.add('modal-open'); // Apply blur/scale effect to main app
-    }
-
-    // YouTube ID抽出ヘルパー関数
-    function extractYouTubeId(url) {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    }
-
-    function closeModal() {
-      modalOverlay.classList.remove('active');
-      modalIframe.src = ""; // Stop video playback
-      appContainer.classList.remove('modal-open');
-    }
-
-    modalCloseBtn.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) closeModal();
-    });
-
-    // --- クイズ進行 ---
-
-    function showQuestion() {
-      resetState();
-      updateProgressBar();
-
-      const currentQuiz = currentQuestions[currentQuizIndex];
-      questionNumberEl.innerText = currentQuizIndex + 1;
-      questionEl.innerText = currentQuiz.question;
-      questionEl.classList.add('animated');
-      
-      // Shuffle answer options for variety
-      const shuffledOptions = [...currentQuiz.answerOptions].sort(() => Math.random() - 0.5);
-
-      shuffledOptions.forEach(answer => {
-        const button = document.createElement('button');
-        button.innerText = answer.text;
-        button.classList.add('btn', 'animated');
-        if (answer.isCorrect) button.dataset.correct = answer.isCorrect;
-        button.dataset.rationale = answer.rationale || "";
-        button.addEventListener('click', selectAnswer);
-        answerButtonsEl.appendChild(button);
-      });
-    }
-
-    function resetState() {
-      nextBtn.classList.add('hide');
-      nextBtn.innerText = '次の問題へ';
-      hintBtn.classList.remove('hide'); // Ensure hint button is visible
-      resultContainer.classList.add('hide');
-      resultTitleEl.classList.remove('correct', 'incorrect'); // Clear result title styling
-      while (answerButtonsEl.firstChild) {
-        answerButtonsEl.removeChild(answerButtonsEl.firstChild);
-      }
-      questionEl.classList.remove('animated'); // Remove to re-add on next question
-    }
-
-    function selectAnswer(e) {
-      const selectedBtn = e.target;
-      const isCorrect = selectedBtn.dataset.correct === 'true';
-      const rationale = selectedBtn.dataset.rationale;
-
-      if (isCorrect) {
-        score++;
-        resultTitleEl.innerText = '正解！ 🎉';
-        resultTitleEl.style.color = 'var(--correct-color)';
-        resultTitleEl.classList.add('correct');
-      } else {
-        resultTitleEl.innerText = '不正解... 🤔';
-        resultTitleEl.style.color = 'var(--incorrect-color)';
-        resultTitleEl.classList.add('incorrect');
-      }
-      
-      rationaleTextEl.innerText = rationale;
-      resultContainer.classList.remove('hide');
-      resultContainer.classList.add('animated');
-      hintBtn.classList.add('hide'); // Hide hint after answering
-
-      Array.from(answerButtonsEl.children).forEach(button => {
-        setStatusClass(button, button.dataset.correct === 'true');
-        button.disabled = true; // Disable all buttons after selection
-      });
-
-      if (currentQuestions.length > currentQuizIndex + 1) {
-        nextBtn.classList.remove('hide');
-      } else {
-        nextBtn.innerText = '結果を見る';
-        nextBtn.classList.remove('hide');
-      }
-    }
-
-    function setStatusClass(element, correct) {
-      element.classList.remove('correct', 'incorrect');
-      if (correct) {
-        element.classList.add('correct');
-      } else {
-        element.classList.add('incorrect');
-      }
-    }
-
-    function updateProgressBar() {
-      const progressPercent = ((currentQuizIndex) / currentQuestions.length) * 100; // currentQuizIndex starts from 0
-      progressBar.style.width = `${progressPercent}%`;
-    }
-
-    hintBtn.addEventListener('click', () => {
-      const currentQuiz = currentQuestions[currentQuizIndex];
-      resultTitleEl.innerText = 'ヒント';
-      resultTitleEl.style.color = 'var(--text-dark)';
-      resultTitleEl.classList.remove('correct', 'incorrect');
-      rationaleTextEl.innerText = currentQuiz.hint || "ヒントはありません。";
-      resultContainer.classList.remove('hide');
-      resultContainer.classList.add('animated');
-      hintBtn.classList.add('hide'); // Hide hint after showing it
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentQuizIndex++;
-      if (currentQuizIndex < currentQuestions.length) {
-        showQuestion();
-      } else {
-        showFinalResult();
-      }
-    });
-
-    function showFinalResult() {
-      quizInterface.classList.add('hide');
-      finalResultContainer.classList.remove('hide');
-      finalResultContainer.classList.add('animated');
-      scoreEl.innerText = score;
-      totalFinalEl.innerText = currentQuestions.length;
-    }
-
-    restartBtn.addEventListener('click', () => startQuiz(currentQuestions, currentResources, quizSheetName));
-    
-    backToMenuBtn.addEventListener('click', () => {
-      fetchSheetList();
-    });
-    
-    homeBtn.addEventListener('click', showMenu);
-
-    // Initial progress bar update for the first question
-    progressBar.style.width = '0%';
-
-  </script>
-</body>
-</html>
