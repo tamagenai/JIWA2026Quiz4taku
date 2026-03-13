@@ -4,24 +4,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中国語学習の旅(4択)</title>
+  <title>中国語学習の旅</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <style>
     /* CSS Variables for a more maintainable theme */
     :root {
-      --primary-red: #D22B2B; /* Deep Chinese Red */
-      --primary-gold: #FFD700; /* Gold */
-      --secondary-green: #3CB371; /* Jade Green */
-      --secondary-blue: #4682B4; /* Serene Blue */
+      /* より落ち着いた、透明感のある色合いに調整 */
+      --primary-red: #B22222; /* より深みのある赤 */
+      --primary-gold: #DAA520; /* 落ち着いた金 */
+      --secondary-green: #2E8B57; /* 落ち着いた翡翠色 */
+      --secondary-blue: #4169E1; /* ロイヤルブルーに近い落ち着いた青 */
       --text-dark: #333333;
       --text-light: #F0F2F5;
-      --bg-light: #F8F9FA;
-      --bg-dark: #2C3E50; /* Darker background for contrast */
-      --border-light: #E0E0E0;
-      --shadow-color: rgba(0, 0, 0, 0.15);
+      --bg-light: #F8F8F8; /* 背景を少しだけ暗く */
+      --bg-dark: #2C3E50;
+      --border-light: #E8E8E8; /* ボーダー色を少し柔らかく */
+      --shadow-color: rgba(0, 0, 0, 0.08); /* シャドウをより柔らかく */
       --correct-color: var(--secondary-green);
       --incorrect-color: var(--primary-red);
-      --info-color: #17a2b8;
+      --info-color: #1a7e91; /* 情報ボタンの色も調整 */
+
+      /* New gradient colors for quiz list buttons - 透明感を出し、彩度を調整 */
+      --btn-gradient-1: linear-gradient(135deg, rgba(255, 123, 123, 0.8), rgba(255, 76, 76, 0.8)); /* Red tone */
+      --btn-gradient-2: linear-gradient(135deg, rgba(109, 213, 237, 0.8), rgba(33, 147, 176, 0.8)); /* Blue tone */
+      --btn-gradient-3: linear-gradient(135deg, rgba(129, 244, 158, 0.8), rgba(86, 171, 47, 0.8)); /* Green tone */
+      --btn-gradient-4: linear-gradient(135deg, rgba(255, 195, 113, 0.8), rgba(255, 95, 109, 0.8)); /* Orange/Pink tone */
+      --btn-gradient-5: linear-gradient(135deg, rgba(164, 198, 57, 0.8), rgba(107, 142, 35, 0.8)); /* Olive Green tone */
+      --btn-gradient-6: linear-gradient(135deg, rgba(218, 165, 32, 0.8), rgba(184, 134, 11, 0.8)); /* Darker Gold tone */
     }
 
     /* Base Styles */
@@ -37,23 +46,23 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #f0f2f5 0%, #e0e2e5 100%); /* Subtle gradient */
+      background: linear-gradient(135deg, #eaf2f5 0%, #e0e6eb 100%); /* より柔らかい背景グラデーション */
       color: var(--text-dark);
-      overflow-y: auto; /* bodyがスクロールできるように変更 */
+      overflow-y: auto;
       position: relative;
     }
 
     /* Background pattern - Abstract Chinese landscape/clouds */
     body::before {
       content: '';
-      position: fixed; /* 固定にしてスクロールしても動かないように */
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       background-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><filter id="f1" x="-50%" y="-50%" width="200%" height="200%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise"/><feDiffuseLighting in="noise" lighting-color="%23A9D9D9" surfaceScale="5" result="light"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting><feComposite in="SourceGraphic" in2="light" operator="arithmetic" k1="1" k2="0" k3="0" k4="0"/></filter></defs><rect width="100%" height="100%" fill="%23F0F2F5"/><circle cx="20" cy="80" r="15" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.4"/><circle cx="80" cy="20" r="18" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.3"/><circle cx="50" cy="50" r="12" fill="%23E6F0F0" filter="url(%23f1)" opacity="0.5"/><path d="M0,70 Q25,50 50,70 T100,70 L100,100 L0,100 Z" fill="%23D9E8F0" opacity="0.7"/><path d="M0,80 Q25,60 50,80 T100,80 L100,100 L0,100 Z" fill="%23C2D7E0" opacity="0.6"/></svg>');
       background-size: cover;
-      opacity: 0.3; /* Subtle transparency */
+      opacity: 0.2; /* 背景の透明度をさらに下げる */
       z-index: -1;
     }
 
@@ -61,41 +70,40 @@
     #app-container {
       background-color: #fff;
       border-radius: 20px;
-      box-shadow: 0 8px 30px var(--shadow-color);
+      box-shadow: 0 6px 25px var(--shadow-color); /* シャドウを柔らかく */
       width: 100%;
-      max-width: 680px; /* Slightly wider */
-      /* min-height: 500px; /* Taller */ /* min-height を削除またはコメントアウト */
-      overflow: hidden; /* App container itself should not scroll, internal content will */
+      max-width: 680px;
+      overflow: hidden;
       position: relative;
       display: flex;
       flex-direction: column;
       transform: translateY(0);
       transition: transform 0.6s ease-out, box-shadow 0.6s ease-out;
-      margin: 20px; /* スマホで端に寄りすぎないように余白を追加 */
+      margin: 20px;
     }
     #app-container.modal-open {
-      transform: translateY(-20px) scale(0.98); /* Shrink slightly when modal is open */
-      box-shadow: 0 4px 15px var(--shadow-color);
+      transform: translateY(-20px) scale(0.98);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* モーダルオープン時のシャドウも調整 */
     }
 
     /* Header */
     #header {
-      background: linear-gradient(45deg, var(--primary-red), #E04E4E);
+      background: linear-gradient(45deg, var(--primary-red), #D84E4E); /* ヘッダーのグラデーションも調整 */
       color: white;
       padding: 1.8rem 1rem;
       text-align: center;
       position: relative;
-      border-bottom: 3px solid var(--primary-gold); /* Golden border */
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      border-bottom: 3px solid var(--primary-gold);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* ヘッダーのシャドウも調整 */
     }
     #header h1 {
       margin: 0;
       font-size: 1.8rem;
-      font-family: 'Zhi Mang Xing', cursive; /* Chinese calligraphy style for title */
+      font-family: 'Zhi Mang Xing', cursive;
       letter-spacing: 2px;
       position: relative;
       display: inline-block;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* テキストシャドウも柔らかく */
     }
     #header h1::before, #header h1::after {
       content: '';
@@ -115,8 +123,8 @@
       left: 1rem;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.15); /* 透明度を上げる */
+      border: 1px solid rgba(255, 255, 255, 0.3); /* ボーダーも透明感を出す */
       color: white;
       padding: 0.4rem 0.9rem;
       border-radius: 20px;
@@ -128,9 +136,9 @@
       gap: 5px;
     }
     #home-btn:hover {
-      background: rgba(255, 255, 255, 0.4);
-      border-color: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* ホバー時のシャドウも調整 */
     }
     #home-btn::before { content: '🏠'; }
 
@@ -141,7 +149,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.9); /* 少しだけ透明に */
       z-index: 100;
       display: flex;
       justify-content: center;
@@ -169,83 +177,60 @@
     #menu-content {
       padding: 2.5rem;
       flex-grow: 1;
-      overflow-y: auto; /* コンテンツがはみ出たらスクロール */
+      overflow-y: auto;
       background-color: var(--bg-light);
     }
     #quiz-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
     }
     .quiz-list-btn {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      align-items: flex-start;
+      justify-content: center;
+      align-items: center;
       padding: 1.5rem;
-      background-color: white;
       border: none;
       border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* シャドウを柔らかく */
       font-size: 1.2rem;
       font-weight: bold;
-      color: var(--text-dark);
+      color: white;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-align: left;
+      text-align: center;
       position: relative;
       overflow: hidden;
-      min-height: 120px;
+      min-height: 140px;
+
+      /* グラデーション背景をデフォルトとして設定 */
+      background: var(--btn-gradient-1);
     }
+    /* ボタンごとに異なるグラデーションを適用 */
+    .quiz-list-btn:nth-child(2n) { background: var(--btn-gradient-2); }
+    .quiz-list-btn:nth-child(3n) { background: var(--btn-gradient-3); }
+    .quiz-list-btn:nth-child(4n) { background: var(--btn-gradient-4); }
+    .quiz-list-btn:nth-child(5n) { background: var(--btn-gradient-5); }
+    .quiz-list-btn:nth-child(6n) { background: var(--btn-gradient-6); }
+    /* 7番目以降も繰り返すように調整 (CSS変数が足りない場合はここで繰り返す) */
+    .quiz-list-btn:nth-child(7n) { background: var(--btn-gradient-1); }
+    .quiz-list-btn:nth-child(8n) { background: var(--btn-gradient-2); }
+
+
     .quiz-list-btn:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 8px 25px var(--shadow-color);
+      transform: translateY(-6px) scale(1.02); /* ホバー時の浮き上がりを調整 */
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* ホバー時のシャドウも柔らかく */
+      filter: brightness(1.05); /* 少しだけ明るく */
     }
-    .quiz-list-btn::before { /* Decorative corner */
-      content: '';
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      border-bottom-right-radius: 15px;
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 0 0 40px 40px;
-      border-color: transparent transparent var(--primary-red) transparent; /* Default accent */
-      opacity: 0.1;
-      transition: all 0.3s ease;
-    }
-    .quiz-list-btn:nth-child(2n)::before { border-color: transparent transparent var(--secondary-green) transparent; }
-    .quiz-list-btn:nth-child(3n)::before { border-color: transparent transparent var(--secondary-blue) transparent; }
-    .quiz-list-btn:hover::before { opacity: 0.3; }
 
     .quiz-list-btn .icon {
-      font-size: 2rem;
-      margin-bottom: 0.8rem;
-      color: var(--primary-red); /* Default icon color */
+      font-size: 2.8rem;
+      margin-bottom: 0.6rem;
+      color: rgba(255, 255, 255, 0.95); /* アイコンの色も少し調整 */
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2); /* テキストシャドウも柔らかく */
     }
-    .quiz-list-btn:nth-child(2n) .icon { color: var(--secondary-green); }
-    .quiz-list-btn:nth-child(3n) .icon { color: var(--secondary-blue); }
 
-    .quiz-list-btn .progress-bar-small {
-        width: 100%; height: 6px; background-color: #e9ecef; border-radius: 3px; margin-top: 10px;
-    }
-    .quiz-list-btn .progress-bar-small div {
-        height: 100%; background-color: var(--primary-red); border-radius: 3px;
-        transition: width 0.4s ease;
-    }
-    .quiz-list-btn:nth-child(2n) .progress-bar-small div { background-color: var(--secondary-green); }
-    .quiz-list-btn:nth-child(3n) .progress-bar-small div { background-color: var(--secondary-blue); }
-
-    .quiz-list-btn .status-tag {
-        font-size: 0.8rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 10px;
-        background-color: var(--info-color);
-        color: white;
-        margin-top: 10px;
-        align-self: flex-end; /* Align to bottom right */
-    }
     /* Quiz Interface */
     #quiz-interface {
       flex-grow: 1;
@@ -256,13 +241,13 @@
     #progress-bar-container {
       width: 100%;
       height: 10px;
-      background: linear-gradient(to right, #e0e2e5, #e9ecef);
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(to right, #eaf2f5, #e0e6eb); /* プログレスバー背景も調整 */
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08); /* シャドウを柔らかく */
     }
     #progress-bar {
       width: 0%;
       height: 100%;
-      background: linear-gradient(45deg, var(--primary-red), var(--primary-gold)); /* Gradient progress */
+      background: linear-gradient(45deg, var(--primary-red), var(--primary-gold)); /* グラデーションを維持 */
       border-radius: 0 5px 5px 0;
       transition: width 0.4s ease-out;
     }
@@ -272,13 +257,13 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      overflow-y: auto; /* クイズコンテンツがはみ出したら内部でスクロール */
-      -webkit-overflow-scrolling: touch; /* iOSのスクロールを滑らかに */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     #info-header {
       display: flex;
       justify-content: space-between;
-      align-items: center; /* Align items vertically center */
+      align-items: center;
       margin-bottom: 1.5rem;
       padding-bottom: 0.8rem;
       border-bottom: 1px solid var(--border-light);
@@ -306,11 +291,11 @@
       gap: 5px;
       transition: background 0.2s ease, transform 0.2s ease;
       text-decoration: none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* シャドウを柔らかく */
     }
     .resource-btn:hover {
-      background-color: #138496;
-      transform: translateY(-2px);
+      background-color: #1a7e91;
+      transform: translateY(-1px);
     }
     .resource-btn.video::before { content: '🎥'; }
     .resource-btn.document::before { content: '📄'; }
@@ -327,13 +312,12 @@
       background-color: #FDFDFD;
       padding: 1.5rem;
       border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.05); /* シャドウを柔らかく */
       border: 1px solid var(--border-light);
     }
     .btn-grid {
       display: grid;
       gap: 1rem;
-      /* flex-grow: 1; を削除またはコメントアウト。高さの計算を自動に任せる */
     }
     .btn {
       background-color: white;
@@ -344,48 +328,46 @@
       cursor: pointer;
       text-align: left;
       width: 100%;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04); /* シャドウを柔らかく */
       transition: all 0.3s ease;
       color: var(--text-dark);
       font-weight: 500;
     }
     .btn:hover:not(:disabled) {
       border-color: var(--primary-red);
-      background-color: #FFF0F0;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      background-color: #FFFAFA; /* ホバー時の背景色をより柔らかく */
+      transform: translateY(-2px); /* 浮き上がりを調整 */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* ホバー時のシャドウも柔らかく */
     }
     .btn.correct {
       background-color: var(--correct-color);
       color: white;
       border-color: var(--correct-color);
-      transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+      transform: scale(1.01); /* アニメーションのスケールを調整 */
+      box-shadow: 0 2px 10px rgba(46,139,87,0.2); /* シャドウを柔らかく */
       animation: flashGreen 0.5s forwards;
     }
     .btn.incorrect {
       background-color: var(--incorrect-color);
       color: white;
       border-color: var(--incorrect-color);
-      box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+      box-shadow: 0 2px 10px rgba(178,34,34,0.2); /* シャドウを柔らかく */
       animation: shake 0.5s forwards;
     }
     .btn:disabled {
         cursor: not-allowed;
-        opacity: 0.8;
+        opacity: 0.7; /* 透明度を上げる */
     }
 
-    /* @keyframes flashGreen { ... } は変更なし */
-    /* @keyframes shake { ... } は変更なし */
     @keyframes flashGreen {
         0% { background-color: var(--correct-color); transform: scale(1); }
-        50% { background-color: #5eff5e; transform: scale(1.03); } /* Lighten color for effect */
-        100% { background-color: var(--correct-color); transform: scale(1.02); }
+        50% { background-color: #8af0b7; transform: scale(1.02); } /* Lighten color for effect */
+        100% { background-color: var(--correct-color); transform: scale(1.01); }
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); }
-      40%, 80% { transform: translateX(5px); }
+      20%, 60% { transform: translateX(-3px); } /* 揺れ幅を小さく */
+      40%, 80% { transform: translateX(3px); }
     }
 
 
@@ -395,9 +377,8 @@
       background-color: #FDFDFD;
       border-radius: 15px;
       border: 1px solid var(--border-light);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.05); /* シャドウを柔らかく */
       text-align: center;
-      /* min-height を追加して、内容が少ない場合でも形が崩れないように */
       min-height: 120px;
     }
     #result-title {
@@ -422,11 +403,11 @@
       justify-content: space-between;
       margin-top: 2rem;
       gap: 1rem;
-      flex-shrink: 0; /* スクロールしてもボタンが常に表示されるように */
-      padding-bottom: 1rem; /* ボタンの下に少し余白 */
+      flex-shrink: 0;
+      padding-bottom: 1rem;
     }
     .control-btn {
-      background: linear-gradient(45deg, var(--primary-red), #E04E4E);
+      background: linear-gradient(45deg, var(--primary-red), #D84E4E); /* ボタンのグラデーションも調整 */
       color: white;
       padding: 0.8rem 1.8rem;
       border-radius: 25px;
@@ -435,15 +416,15 @@
       font-weight: bold;
       transition: all 0.3s ease;
       border: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* シャドウを柔らかく */
     }
     .control-btn.secondary {
-        background: linear-gradient(45deg, var(--secondary-blue), #66A3D2);
+        background: linear-gradient(45deg, var(--secondary-blue), #66A3D2); /* セカンダリーボタンも調整 */
     }
     .control-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* ホバー時のシャドウも調整 */
+      opacity: 0.95;
     }
     .control-btn:disabled {
         opacity: 0.6;
@@ -459,7 +440,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.6); /* モーダルの背景を少し明るく */
       z-index: 1000;
       display: flex;
       justify-content: center;
@@ -475,13 +456,13 @@
     #modal-content {
       background: white;
       width: 95%;
-      max-width: 900px; /* Wider modal */
-      height: 85%; /* Taller modal */
+      max-width: 900px;
+      height: 85%;
       border-radius: 20px;
       position: relative;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); /* シャドウを柔らかく */
       transform: scale(0.9);
       transition: transform 0.4s ease;
     }
@@ -494,7 +475,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+      background: linear-gradient(90deg, #fbfbfb, #f0f3f6); /* モーダルヘッダー背景も調整 */
       border-radius: 20px 20px 0 0;
     }
     #modal-title {
@@ -568,7 +549,7 @@
       color: var(--primary-red);
       margin-bottom: 1.5rem;
       font-family: 'Zhi Mang Xing', cursive;
-      text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.1); /* シャドウを柔らかく */
     }
     #final-result-container p {
       font-size: 1.5rem;
@@ -581,7 +562,7 @@
       color: var(--secondary-green);
       animation: scorePop 0.6s ease-out;
       display: inline-block;
-      min-width: 40px; /* Prevent jump when score changes */
+      min-width: 40px;
     }
     @keyframes scorePop {
         0% { transform: scale(0.5); opacity: 0; }
@@ -616,7 +597,7 @@
 
     /* Utility Classes */
     .hide { display: none !important; }
-    .animated { animation: fadeIn 0.8s ease-out forwards; } /* Slower fade in */
+    .animated { animation: fadeIn 0.8s ease-out forwards; }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -625,14 +606,14 @@
     /* Responsive Adjustments */
     @media (max-width: 768px) {
       body {
-        padding: 0; /* bodyのpaddingをなくす */
+        padding: 0;
       }
       #app-container {
         border-radius: 0;
-        min-height: 100vh; /* スマホでは画面いっぱいに */
+        min-height: 100vh;
         max-width: 100%;
         box-shadow: none;
-        margin: 0; /* マージンをなくす */
+        margin: 0;
       }
       #header {
         padding: 1.2rem 1rem;
@@ -646,7 +627,7 @@
         right: -35px;
       }
       #menu-content, #main-content, #final-result-container {
-        padding: 1rem; /* パディングを小さくしてスペースを確保 */
+        padding: 1rem;
       }
       #quiz-list {
         grid-template-columns: 1fr;
@@ -654,7 +635,7 @@
       #question {
         font-size: 1.3rem;
         padding: 1rem;
-        margin-bottom: 1.5rem; /* マージンを調整 */
+        margin-bottom: 1.5rem;
       }
       .btn {
         font-size: 1rem;
@@ -663,11 +644,11 @@
       #info-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.8rem; /* ギャップを調整 */
+        gap: 0.8rem;
         margin-bottom: 1rem;
       }
       #progress-text {
-        order: -1; /* 問題番号を上に移動 */
+        order: -1;
         width: 100%;
         text-align: right;
       }
@@ -691,7 +672,7 @@
       }
       #controls {
         flex-direction: column;
-        gap: 0.8rem; /* ギャップを調整 */
+        gap: 0.8rem;
         margin-top: 1.5rem;
       }
       .control-btn {
@@ -723,10 +704,10 @@
       }
     }
 
-    /* iPad (Tablet) 向けの調整 (768px - 1024px くらい) */
+    /* iPad (Tablet) 向けの調整 (769px - 1024px くらい) */
     @media (min-width: 769px) and (max-width: 1024px) {
         #app-container {
-            margin: 40px auto; /* 左右に少し余白 */
+            margin: 40px auto;
             border-radius: 15px;
             max-width: 700px;
         }
@@ -743,7 +724,7 @@
             font-size: 1.05rem;
         }
         #controls {
-            flex-direction: row; /* 横並びを維持 */
+            flex-direction: row;
             justify-content: space-between;
         }
     }
@@ -946,30 +927,19 @@
         const btn = document.createElement('button');
         btn.classList.add('quiz-list-btn');
 
-        // アイコンを追加 (仮のアイコン。必要に応じてカスタマイズしてください)
+        // アイコンを決定
         let icon = '💡'; // Default icon
         if (sheetName.includes('単語')) icon = '📚';
         else if (sheetName.includes('文法')) icon = '📝';
         else if (sheetName.includes('文化')) icon = '🇨🇳';
         else if (sheetName.includes('会話')) icon = '🗣️';
         else if (sheetName.includes('挑戦')) icon = '🏆';
-        
-        btn.innerHTML = `<span class="icon">${icon}</span><span>${sheetName}</span>`;
-
-        // 仮の進行状況/ステータス表示
-        // ここは実際の進捗データと連携させるとより良いです
-        let progress = Math.floor(Math.random() * 100);
-        let statusTag = '';
-        if (progress === 0) {
-            statusTag = '<span class="status-tag" style="background-color: #6c757d;">未挑戦</span>';
-        } else if (progress < 100) {
-            btn.innerHTML += `<div class="progress-bar-small"><div style="width: ${progress}%"></div></div>`;
-            statusTag = `<span class="status-tag" style="background-color: var(--info-color);">${progress}%完了</span>`;
-        } else {
-            btn.innerHTML += `<div class="progress-bar-small"><div style="width: 100%"></div></div>`;
-            statusTag = '<span class="status-tag" style="background-color: var(--correct-color);">完了済み</span>';
+        else if (sheetName.includes('第')) { // "第1課"のような場合に電球アイコン
+            icon = '💡';
         }
-        btn.innerHTML += statusTag;
+        
+        // プログレスバーとステータスタグを削除し、アイコンとタイトルのみにする
+        btn.innerHTML = `<span class="icon">${icon}</span><span>${sheetName}</span>`;
 
         btn.addEventListener('click', () => fetchQuizData(sheetName));
         quizListEl.appendChild(btn);
